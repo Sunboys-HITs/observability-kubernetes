@@ -1,0 +1,66 @@
+name: Deploy Observability
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  NAMESPACE: monitoring
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure kubeconfig
+        run: |
+          test -n "${{ secrets.KUBECONFIG_B64 }}" || {
+            echo 'KUBECONFIG_B64 GitHub Actions secret is not configured' >&2
+            exit 1
+          }
+          mkdir -p "$HOME/.kube"
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Deploy Prometheus and Grafana
+        run: |
+          helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --values helm/kube-prometheus-stack/values.yaml \
+            --wait \
+            --timeout 10m
+
+      - name: Deploy Loki
+        run: |
+          helm upgrade --install loki grafana/loki \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --values helm/loki/values.yaml \
+            --wait \
+            --timeout 10m
+
+      - name: Deploy Alloy
+        run: |
+          helm upgrade --install alloy grafana/alloy \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --values helm/alloy/values.yaml \
+            --wait \
+            --timeout 10m
+
+      - name: Show observability resources
+        run: kubectl -n "$NAMESPACE" get pods,svc,pvc -o wide
