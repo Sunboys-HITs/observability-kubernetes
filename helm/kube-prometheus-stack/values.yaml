@@ -1,5 +1,11 @@
 fullnameOverride: kube-prometheus-stack
 
+defaultRules:
+  create: false
+
+prometheusOperator:
+  enabled: false
+
 grafana:
   enabled: true
   adminUser: admin
@@ -16,7 +22,14 @@ grafana:
     pathType: Prefix
   persistence:
     enabled: true
-    size: 2Gi
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 25m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
   sidecar:
     dashboards:
       enabled: true
@@ -34,30 +47,22 @@ grafana:
         maxLines: 1000
 
 prometheus:
-  prometheusSpec:
-    retention: 7d
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 10Gi
-    serviceMonitorSelectorNilUsesHelmValues: false
-    podMonitorSelectorNilUsesHelmValues: false
+  enabled: false
 
 alertmanager:
-  enabled: true
-  alertmanagerSpec:
-    storage:
-      volumeClaimTemplate:
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+nodeExporter:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
 
 kubeEtcd:
   enabled: false

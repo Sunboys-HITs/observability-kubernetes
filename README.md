@@ -4,11 +4,21 @@ Kubernetes observability stack for SUNBOYS services.
 
 ## What It Deploys
 
-- `kube-prometheus-stack`: Prometheus, Grafana, Alertmanager, node and Kubernetes metrics.
-- `loki`: centralized log storage.
-- `alloy`: Kubernetes log collector that ships container stdout/stderr logs to Loki.
+- `Grafana`: UI for service logs.
+- `Loki`: lightweight centralized log storage.
+- `Alloy`: Kubernetes log collector that ships container stdout/stderr logs to Loki.
 
 The stack is deployed into namespace `monitoring`.
+
+This repository uses a lightweight profile for small k3s nodes. Prometheus,
+Alertmanager, node-exporter, kube-state-metrics, Loki canary, and service
+monitors are disabled by default to avoid overloading the Kubernetes API server.
+
+Default resource caps:
+
+- Grafana: `200m` CPU / `256Mi` memory.
+- Loki: `300m` CPU / `512Mi` memory, `24h` retention, `2Gi` PVC.
+- Alloy: `100m` CPU / `128Mi` memory per node.
 
 ## Deploy
 

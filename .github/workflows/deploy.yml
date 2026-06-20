@@ -36,7 +36,21 @@ jobs:
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
 
-      - name: Deploy Prometheus and Grafana
+      - name: Preflight cluster health
+        run: |
+          kubectl get nodes
+          kubectl get pods -A
+
+      - name: Deploy Loki
+        run: |
+          helm upgrade --install loki grafana/loki \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --values helm/loki/values.yaml \
+            --wait \
+            --timeout 5m
+
+      - name: Deploy Grafana
         env:
           GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
         run: |
@@ -55,19 +69,10 @@ jobs:
             --set grafana.ingress.hosts[0]="$GRAFANA_HOST" \
             --set grafana.adminPassword="$GRAFANA_ADMIN_PASSWORD" \
             --wait \
-            --timeout 10m
+            --timeout 5m
 
       - name: Provision Grafana dashboards
         run: kubectl apply -f k8s/dashboards/
-
-      - name: Deploy Loki
-        run: |
-          helm upgrade --install loki grafana/loki \
-            --namespace "$NAMESPACE" \
-            --create-namespace \
-            --values helm/loki/values.yaml \
-            --wait \
-            --timeout 10m
 
       - name: Deploy Alloy
         run: |
@@ -76,7 +81,7 @@ jobs:
             --create-namespace \
             --values helm/alloy/values.yaml \
             --wait \
-            --timeout 10m
+            --timeout 5m
 
       - name: Show observability resources
         run: kubectl -n "$NAMESPACE" get pods,svc,pvc -o wide
