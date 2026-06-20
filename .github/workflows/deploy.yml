@@ -57,6 +57,9 @@ jobs:
             --wait \
             --timeout 10m
 
+      - name: Provision Grafana dashboards
+        run: kubectl apply -f k8s/dashboards/
+
       - name: Deploy Loki
         run: |
           helm upgrade --install loki grafana/loki \

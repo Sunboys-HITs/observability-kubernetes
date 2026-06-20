@@ -94,6 +94,9 @@ Do not expose Grafana with the checked-in development password.
 
 ## Useful LogQL
 
+Grafana automatically provisions the `SUNBOYS / Service Logs` dashboard from
+`k8s/dashboards/service-logs-dashboard.yaml`.
+
 All app logs:
 
 ```logql
