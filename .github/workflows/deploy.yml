@@ -8,6 +8,7 @@ on:
 
 env:
   NAMESPACE: monitoring
+  DEFAULT_GRAFANA_HOST: grafana.31.192.111.254.sslip.io
 
 jobs:
   deploy:
@@ -36,11 +37,23 @@ jobs:
           helm repo update
 
       - name: Deploy Prometheus and Grafana
+        env:
+          GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
         run: |
+          test -n "$GRAFANA_ADMIN_PASSWORD" || {
+            echo 'GRAFANA_ADMIN_PASSWORD GitHub Actions secret is not configured' >&2
+            exit 1
+          }
+          GRAFANA_HOST="${{ vars.GRAFANA_HOST }}"
+          if [ -z "$GRAFANA_HOST" ]; then
+            GRAFANA_HOST="$DEFAULT_GRAFANA_HOST"
+          fi
           helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
             --namespace "$NAMESPACE" \
             --create-namespace \
             --values helm/kube-prometheus-stack/values.yaml \
+            --set grafana.ingress.hosts[0]="$GRAFANA_HOST" \
+            --set grafana.adminPassword="$GRAFANA_ADMIN_PASSWORD" \
             --wait \
             --timeout 10m
 

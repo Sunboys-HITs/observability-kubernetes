@@ -8,7 +8,12 @@ grafana:
   service:
     type: ClusterIP
   ingress:
-    enabled: false
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - grafana.31.192.111.254.sslip.io
+    path: /
+    pathType: Prefix
   persistence:
     enabled: true
     size: 2Gi

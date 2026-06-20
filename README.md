@@ -41,6 +41,7 @@ Required repository secret:
 
 ```text
 KUBECONFIG_B64
+GRAFANA_ADMIN_PASSWORD
 ```
 
 Create it from the kubeconfig that points to the k3s API:
@@ -51,7 +52,27 @@ base64 -w0 ~/.kube/sunboys-k3s.yaml
 
 ## Access Grafana
 
-Grafana is internal by default.
+Grafana is exposed through Kubernetes Ingress.
+
+Default host:
+
+```text
+http://grafana.31.192.111.254.sslip.io
+```
+
+To override it, set the repository variable before deploy:
+
+```text
+GRAFANA_HOST=grafana.<cluster-ip>.sslip.io
+```
+
+Then open:
+
+```text
+http://grafana.<cluster-ip>.sslip.io
+```
+
+For local-only access you can still use port-forward:
 
 ```bash
 kubectl -n monitoring port-forward svc/kube-prometheus-stack-grafana 3000:80
@@ -66,10 +87,10 @@ http://localhost:3000
 Default credentials:
 
 ```text
-admin / admin
+admin / value from GRAFANA_ADMIN_PASSWORD
 ```
 
-Change `grafana.adminPassword` in `helm/kube-prometheus-stack/values.yaml` before production use.
+Do not expose Grafana with the checked-in development password.
 
 ## Useful LogQL
 
