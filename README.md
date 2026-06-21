@@ -113,8 +113,10 @@ Do not expose Grafana with the checked-in development password.
 Grafana automatically provisions the `SUNBOYS / Service Logs` dashboard from
 `k8s/dashboards/service-logs-dashboard.yaml`.
 
-It also provisions `SUNBOYS / MainService Metrics`. Prometheus scrapes
-`http://main-service.app.svc.cluster.local/metrics` automatically.
+It also provisions `SUNBOYS / MainService Metrics` and
+`SUNBOYS / Code Runner Metrics`. Prometheus automatically scrapes
+`http://main-service.app.svc.cluster.local/metrics` and
+`http://code-runner-service.app.svc.cluster.local/actuator/prometheus`.
 
 All app logs:
 

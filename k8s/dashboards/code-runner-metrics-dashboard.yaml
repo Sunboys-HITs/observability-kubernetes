@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-code-runner-metrics-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  code-runner-metrics.json: |-
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "graphTooltip": 1,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [{"expr": "sum(rate(http_server_requests_seconds_count{job=\"code-runner-service\"}[5m])) by (method, uri)", "legendFormat": "{{method}} {{uri}}", "refId": "A"}],
+          "title": "HTTP request rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "id": 2,
+          "targets": [{"expr": "sum(rate(http_server_requests_seconds_sum{job=\"code-runner-service\"}[5m])) by (method, uri) / clamp_min(sum(rate(http_server_requests_seconds_count{job=\"code-runner-service\"}[5m])) by (method, uri), 1e-9)", "legendFormat": "{{method}} {{uri}}", "refId": "A"}],
+          "title": "HTTP average duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 3,
+          "targets": [{"expr": "sum(rate(http_server_requests_seconds_count{job=\"code-runner-service\", status=~\"5..\"}[5m])) by (status, uri)", "legendFormat": "{{status}} {{uri}}", "refId": "A"}],
+          "title": "HTTP 5xx errors",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 4,
+          "targets": [{"expr": "process_cpu_usage{job=\"code-runner-service\"}", "legendFormat": "process", "refId": "A"}, {"expr": "system_cpu_usage{job=\"code-runner-service\"}", "legendFormat": "system", "refId": "B"}],
+          "title": "CPU usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "id": 5,
+          "targets": [{"expr": "sum(jvm_memory_used_bytes{job=\"code-runner-service\"}) by (area)", "legendFormat": "{{area}} used", "refId": "A"}, {"expr": "sum(jvm_memory_max_bytes{job=\"code-runner-service\"}) by (area)", "legendFormat": "{{area}} max", "refId": "B"}],
+          "title": "JVM memory",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+          "id": 6,
+          "targets": [{"expr": "jvm_threads_live_threads{job=\"code-runner-service\"}", "legendFormat": "live", "refId": "A"}, {"expr": "jvm_threads_daemon_threads{job=\"code-runner-service\"}", "legendFormat": "daemon", "refId": "B"}],
+          "title": "JVM threads",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+          "id": 7,
+          "targets": [{"expr": "hikaricp_connections_active{job=\"code-runner-service\"}", "legendFormat": "active", "refId": "A"}, {"expr": "hikaricp_connections_idle{job=\"code-runner-service\"}", "legendFormat": "idle", "refId": "B"}, {"expr": "hikaricp_connections_pending{job=\"code-runner-service\"}", "legendFormat": "pending", "refId": "C"}],
+          "title": "Database connection pool",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+          "id": 8,
+          "targets": [{"expr": "process_uptime_seconds{job=\"code-runner-service\"}", "legendFormat": "uptime", "refId": "A"}],
+          "title": "Process uptime",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["sunboys", "code-runner", "metrics"],
+      "templating": {"list": []},
+      "time": {"from": "now-1h", "to": "now"},
+      "title": "SUNBOYS / Code Runner Metrics",
+      "uid": "sunboys-code-runner-metrics",
+      "version": 1
+    }

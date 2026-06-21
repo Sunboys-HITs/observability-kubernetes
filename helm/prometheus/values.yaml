@@ -34,3 +34,11 @@ serverFiles:
             labels:
               namespace: app
               service: main-service
+      - job_name: code-runner-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets:
+              - code-runner-service.app.svc.cluster.local:80
+            labels:
+              namespace: app
+              service: code-runner-service
