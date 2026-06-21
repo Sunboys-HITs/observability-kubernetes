@@ -17,6 +17,9 @@ persistence:
   enabled: true
   size: 512Mi
 
+initChownData:
+  enabled: false
+
 resources:
   requests:
     cpu: 10m
