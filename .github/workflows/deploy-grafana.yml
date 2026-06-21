@@ -1,0 +1,73 @@
+name: Deploy Grafana
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - helm/grafana/**
+      - k8s/dashboards/**
+      - .github/workflows/deploy-grafana.yml
+  workflow_dispatch:
+
+env:
+  NAMESPACE: monitoring
+  DEFAULT_GRAFANA_HOST: grafana.31.192.111.254.sslip.io
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure kubeconfig
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+        run: |
+          test -n "$KUBECONFIG_B64" || {
+            echo 'KUBECONFIG_B64 GitHub Actions secret is not configured' >&2
+            exit 1
+          }
+          mkdir -p "$HOME/.kube"
+          printf '%s' "$KUBECONFIG_B64" | base64 --decode > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Add Grafana Helm repository
+        run: |
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Preflight cluster health
+        run: kubectl get nodes
+
+      - name: Deploy Grafana
+        env:
+          GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+        run: |
+          test -n "$GRAFANA_ADMIN_PASSWORD" || {
+            echo 'GRAFANA_ADMIN_PASSWORD GitHub Actions secret is not configured' >&2
+            exit 1
+          }
+          GRAFANA_HOST="${{ vars.GRAFANA_HOST }}"
+          if [ -z "$GRAFANA_HOST" ]; then
+            GRAFANA_HOST="$DEFAULT_GRAFANA_HOST"
+          fi
+          helm upgrade --install grafana grafana/grafana \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --values helm/grafana/values.yaml \
+            --set ingress.hosts[0]="$GRAFANA_HOST" \
+            --set adminPassword="$GRAFANA_ADMIN_PASSWORD" \
+            --wait \
+            --timeout 5m
+
+      - name: Provision Grafana dashboards
+        run: kubectl apply -f k8s/dashboards/
+
+      - name: Show Grafana resources
+        if: always()
+        run: kubectl -n "$NAMESPACE" get deployment,pod,service,pvc,configmap -l app.kubernetes.io/instance=grafana -o wide

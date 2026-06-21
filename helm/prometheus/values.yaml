@@ -1,0 +1,40 @@
+alertmanager:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
+
+prometheus-pushgateway:
+  enabled: false
+
+server:
+  persistentVolume:
+    enabled: true
+    size: 2Gi
+  retention: 7d
+  resources:
+    requests:
+      cpu: 50m
+      memory: 192Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+serverFiles:
+  prometheus.yml:
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets:
+              - localhost:9090
+      - job_name: main-service
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+              - main-service.app.svc.cluster.local:80
+            labels:
+              namespace: app
+              service: main-service

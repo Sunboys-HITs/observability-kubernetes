@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-main-service-metrics-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  main-service-metrics.json: |-
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "graphTooltip": 1,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [{"expr": "sum(rate(http_requests_received_total{job=\"main-service\"}[5m]))", "legendFormat": "requests/s", "refId": "A"}],
+          "title": "HTTP request rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "id": 2,
+          "targets": [{"expr": "sum(rate(main_service_http_server_errors_total[5m]))", "legendFormat": "5xx/s", "refId": "A"}],
+          "title": "Server errors",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 3,
+          "targets": [
+            {"expr": "sum(rate(main_service_code_execution_requests_published_total[5m])) by (language)", "legendFormat": "{{language}} published", "refId": "A"},
+            {"expr": "sum(rate(main_service_code_execution_request_publish_failures_total[5m])) by (language)", "legendFormat": "{{language}} failed", "refId": "B"}
+          ],
+          "title": "RabbitMQ publishing",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 4,
+          "targets": [{"expr": "main_service_code_execution_results_in_progress", "legendFormat": "in progress", "refId": "A"}],
+          "title": "Execution results in progress",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["sunboys", "main-service", "metrics"],
+      "templating": {"list": []},
+      "time": {"from": "now-1h", "to": "now"},
+      "title": "SUNBOYS / MainService Metrics",
+      "uid": "sunboys-main-service-metrics",
+      "version": 1
+    }

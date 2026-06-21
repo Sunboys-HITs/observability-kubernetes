@@ -8,7 +8,6 @@ on:
 
 env:
   NAMESPACE: monitoring
-  DEFAULT_GRAFANA_HOST: grafana.31.192.111.254.sslip.io
 
 jobs:
   deploy:
@@ -48,30 +47,6 @@ jobs:
             --values helm/loki/values.yaml \
             --wait \
             --timeout 5m
-
-      - name: Deploy Grafana
-        env:
-          GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
-        run: |
-          test -n "$GRAFANA_ADMIN_PASSWORD" || {
-            echo 'GRAFANA_ADMIN_PASSWORD GitHub Actions secret is not configured' >&2
-            exit 1
-          }
-          GRAFANA_HOST="${{ vars.GRAFANA_HOST }}"
-          if [ -z "$GRAFANA_HOST" ]; then
-            GRAFANA_HOST="$DEFAULT_GRAFANA_HOST"
-          fi
-          helm upgrade --install grafana grafana/grafana \
-            --namespace "$NAMESPACE" \
-            --create-namespace \
-            --values helm/grafana/values.yaml \
-            --set ingress.hosts[0]="$GRAFANA_HOST" \
-            --set adminPassword="$GRAFANA_ADMIN_PASSWORD" \
-            --wait \
-            --timeout 5m
-
-      - name: Provision Grafana dashboards
-        run: kubectl apply -f k8s/dashboards/
 
       - name: Deploy Alloy
         run: |

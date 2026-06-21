@@ -4,7 +4,8 @@ Kubernetes observability stack for SUNBOYS services.
 
 ## What It Deploys
 
-- `Grafana`: UI for service logs.
+- `Grafana`: UI for service logs and metrics.
+- `Prometheus`: metrics storage and scraping for MainService.
 - `Loki`: lightweight centralized log storage.
 - `Alloy`: Kubernetes log collector that ships container stdout/stderr logs to Loki.
 
@@ -24,7 +25,13 @@ Default resource caps:
 
 ```bash
 helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
+
+helm upgrade --install prometheus prometheus-community/prometheus \
+  --namespace monitoring \
+  --create-namespace \
+  --values helm/prometheus/values.yaml
 
 helm upgrade --install grafana grafana/grafana \
   --namespace monitoring \
@@ -105,6 +112,9 @@ Do not expose Grafana with the checked-in development password.
 
 Grafana automatically provisions the `SUNBOYS / Service Logs` dashboard from
 `k8s/dashboards/service-logs-dashboard.yaml`.
+
+It also provisions `SUNBOYS / MainService Metrics`. Prometheus scrapes
+`http://main-service.app.svc.cluster.local/metrics` automatically.
 
 All app logs:
 
