@@ -81,6 +81,68 @@ data:
           "targets": [{"expr": "process_uptime_seconds{job=\"code-runner-service\"}", "legendFormat": "uptime", "refId": "A"}],
           "title": "Process uptime",
           "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+          "id": 9,
+          "targets": [{"expr": "pool_containers_available{job=\"code-runner-service\"}", "legendFormat": "{{language}} available", "refId": "A"}, {"expr": "pool_containers_total{job=\"code-runner-service\"}", "legendFormat": "{{language}} total", "refId": "B"}],
+          "title": "Container pools",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+          "id": 10,
+          "targets": [{"expr": "sum(rate(pool_container_borrow_time_seconds_sum{job=\"code-runner-service\"}[5m])) by (language) / clamp_min(sum(rate(pool_container_borrow_time_seconds_count{job=\"code-runner-service\"}[5m])) by (language), 1e-9)", "legendFormat": "{{language}} average", "refId": "A"}, {"expr": "pool_container_borrow_time_seconds_max{job=\"code-runner-service\"}", "legendFormat": "{{language}} max", "refId": "B"}],
+          "title": "Container borrow duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40},
+          "id": 11,
+          "targets": [{"expr": "sum(rate(pool_container_exec_time_seconds_sum{job=\"code-runner-service\"}[5m])) by (language) / clamp_min(sum(rate(pool_container_exec_time_seconds_count{job=\"code-runner-service\"}[5m])) by (language), 1e-9)", "legendFormat": "{{language}} average", "refId": "A"}, {"expr": "pool_container_exec_time_seconds_max{job=\"code-runner-service\"}", "legendFormat": "{{language}} max", "refId": "B"}],
+          "title": "Container command duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
+          "id": 12,
+          "targets": [{"expr": "sum(rate(pool_container_borrow_failures_total{job=\"code-runner-service\"}[5m])) by (language)", "legendFormat": "{{language}} borrow failures/s", "refId": "A"}, {"expr": "sum(rate(consumer_messages_failed_total{job=\"code-runner-service\"}[5m])) by (language)", "legendFormat": "{{language}} consumer failures/s", "refId": "B"}],
+          "title": "Pool and consumer failures",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 48},
+          "id": 13,
+          "targets": [{"expr": "sum(rate(consumer_messages_received_total{job=\"code-runner-service\"}[5m])) by (language)", "legendFormat": "{{language}} received/s", "refId": "A"}, {"expr": "sum(rate(producer_results_published_total{job=\"code-runner-service\"}[5m]))", "legendFormat": "published/s", "refId": "B"}, {"expr": "sum(rate(producer_results_serialization_failures_total{job=\"code-runner-service\"}[5m]))", "legendFormat": "serialization failures/s", "refId": "C"}],
+          "title": "RabbitMQ consumer and producer",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 48},
+          "id": 14,
+          "targets": [{"expr": "sum(rate(consumer_messages_processing_time_seconds_sum{job=\"code-runner-service\"}[5m])) by (language) / clamp_min(sum(rate(consumer_messages_processing_time_seconds_count{job=\"code-runner-service\"}[5m])) by (language), 1e-9)", "legendFormat": "{{language}} consumer", "refId": "A"}, {"expr": "sum(rate(executions_duration_seconds_sum{job=\"code-runner-service\"}[5m])) by (language) / clamp_min(sum(rate(executions_duration_seconds_count{job=\"code-runner-service\"}[5m])) by (language), 1e-9)", "legendFormat": "{{language}} execution", "refId": "B"}],
+          "title": "Processing and execution duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 56},
+          "id": 15,
+          "targets": [{"expr": "sum(rate(executions_by_language_total{job=\"code-runner-service\"}[5m])) by (language)", "legendFormat": "{{language}} executions/s", "refId": "A"}, {"expr": "sum(rate(tests_passed_total{job=\"code-runner-service\"}[5m])) by (language)", "legendFormat": "{{language}} tests passed/s", "refId": "B"}, {"expr": "sum(rate(tests_failed_total{job=\"code-runner-service\"}[5m])) by (language)", "legendFormat": "{{language}} tests failed/s", "refId": "C"}],
+          "title": "Executions and test results",
+          "type": "timeseries"
         }
       ],
       "refresh": "10s",
