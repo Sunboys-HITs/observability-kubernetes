@@ -32,7 +32,6 @@ jobs:
 
       - name: Add Helm repositories
         run: |
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
 
@@ -62,12 +61,12 @@ jobs:
           if [ -z "$GRAFANA_HOST" ]; then
             GRAFANA_HOST="$DEFAULT_GRAFANA_HOST"
           fi
-          helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+          helm upgrade --install grafana grafana/grafana \
             --namespace "$NAMESPACE" \
             --create-namespace \
-            --values helm/kube-prometheus-stack/values.yaml \
-            --set grafana.ingress.hosts[0]="$GRAFANA_HOST" \
-            --set grafana.adminPassword="$GRAFANA_ADMIN_PASSWORD" \
+            --values helm/grafana/values.yaml \
+            --set ingress.hosts[0]="$GRAFANA_HOST" \
+            --set adminPassword="$GRAFANA_ADMIN_PASSWORD" \
             --wait \
             --timeout 5m
 

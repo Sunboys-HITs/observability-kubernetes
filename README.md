@@ -10,27 +10,26 @@ Kubernetes observability stack for SUNBOYS services.
 
 The stack is deployed into namespace `monitoring`.
 
-This repository uses a lightweight profile for small k3s nodes. Prometheus,
-Alertmanager, node-exporter, kube-state-metrics, Loki canary, and service
-monitors are disabled by default to avoid overloading the Kubernetes API server.
+This repository uses a minimal logs-only profile for small k3s nodes. It uses
+the standalone Grafana chart; Prometheus Operator and its CRDs are not installed.
+Only `app` and `infra` namespace logs are collected.
 
 Default resource caps:
 
-- Grafana: `200m` CPU / `256Mi` memory.
-- Loki: `300m` CPU / `512Mi` memory, `24h` retention, `2Gi` PVC.
-- Alloy: `100m` CPU / `128Mi` memory per node.
+- Grafana: `100m` CPU / `192Mi` memory.
+- Loki: `150m` CPU / `256Mi` memory, `6h` retention, `1Gi` PVC.
+- Alloy: `50m` CPU / `64Mi` memory per node.
 
 ## Deploy
 
 ```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 
-helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+helm upgrade --install grafana grafana/grafana \
   --namespace monitoring \
   --create-namespace \
-  --values helm/kube-prometheus-stack/values.yaml
+  --values helm/grafana/values.yaml
 
 helm upgrade --install loki grafana/loki \
   --namespace monitoring \
@@ -85,7 +84,7 @@ http://grafana.<cluster-ip>.sslip.io
 For local-only access you can still use port-forward:
 
 ```bash
-kubectl -n monitoring port-forward svc/kube-prometheus-stack-grafana 3000:80
+kubectl -n monitoring port-forward svc/grafana 3000:80
 ```
 
 Open:
